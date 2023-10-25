@@ -1,0 +1,33 @@
+format PE console
+include '%fasminc%/win32wxp.inc'
+entry Start
+
+section '.idata' import readable writeable
+
+library kernel32, 'KERNEL32.DLL', \
+        msvcrt,   'MSVCRT.DLL'
+
+import kernel32, ExitProcess, 'ExitProcess'
+import msvcrt, printf, 'printf'
+
+section '.data' data readable writeable
+Hello db 'Hello', 0x0d, 0x0a, 0
+Spec db '%d', 0
+
+section '.text' code readable executable
+
+Start:
+       xor ecx, ecx ;Делаем бесконечный цикл
+       mov eax, Hello ;добавляем смещение
+Cycle:
+       cmp byte [eax], 0
+       je ZeroFound
+
+       inc eax
+
+       loop Cycle
+
+ZeroFound:
+       sub eax, Hello
+       cinvoke printf,Spec,eax
+       invoke ExitProcess, dword 0

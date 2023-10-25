@@ -1,0 +1,50 @@
+format PE console
+include '%fasminc%/win32wxp.inc'
+entry Start
+
+section '.idata' import readable writeable
+
+library kernel32, 'KERNEL32.DLL', \
+        msvcrt,   'MSVCRT.DLL'
+
+import kernel32, ExitProcess, 'ExitProcess'
+import msvcrt, printf, 'printf'
+
+section '.data' data readable writeable
+Hello db 'hello world', 0x0d, 0x0a, 0
+Spec db '%d', 0
+
+section '.text' code readable executable
+
+Start:
+       xor ecx, ecx ;Делаем очень длинный цикл
+       xor ebx, ebx ;Letters cnt
+       mov ebx, 1 ;to count from 1 not 0
+       mov eax, Hello ;добавляем смещение
+
+Cycle:
+       cmp byte [eax], 0
+       je StrEnd
+
+       cmp byte [eax], 'a'
+       jae MoreOrEqualA
+
+       inc eax
+       loop Cycle
+
+MoreOrEqualA:
+       cmp byte [eax], 'z'
+       jbe LessOrEqualZ
+
+       inc eax
+       loop Cycle
+
+LessOrEqualZ:
+       inc ebx
+
+       inc eax
+       loop Cycle
+
+StrEnd:
+       cinvoke printf,Spec,ebx
+       invoke ExitProcess, dword 0

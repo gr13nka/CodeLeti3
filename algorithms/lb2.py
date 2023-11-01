@@ -1,4 +1,7 @@
 import ctypes
+import random
+import time
+import numpy
 class Node:
     def __init__(self, data=None):
         self.data = data
@@ -137,6 +140,8 @@ class DynamicArray:
             return self.array[idx]
         print("too big")
 
+    def __len__(self):
+        return self.size
 class Stack:
     def __init__(self):
         self.elem = []
@@ -204,7 +209,6 @@ def SortingStation(istream):
 
 MIN_MERGE = 32
 
-
 def calcMinRun(n):
     """Returns the minimum length of a
     run from 23 - 64 so that
@@ -219,17 +223,18 @@ def calcMinRun(n):
         r |= n & 1
         n >>= 1
     return n + r
-
 def insertionSort(arr, left, right):
     for i in range(left + 1, right + 1):
         j = i
         while j > left and arr[j] < arr[j - 1]:
             arr[j], arr[j - 1] = arr[j - 1], arr[j]
             j -= 1
+
 def merge(arr, l, m, r):
 
     len1, len2 = m - l + 1, r - m
     left, right = [], []
+    
     for i in range(0, len1):
         left.append(arr[l + i])
     for i in range(0, len2):
@@ -239,13 +244,41 @@ def merge(arr, l, m, r):
 
     # after comparing, we merge those two array
     # in larger sub array
+    CopyCntL = 0
+    CopyCntR = 0
+
     while i < len1 and j < len2:
+
         if left[i] <= right[j]:
             arr[k] = left[i]
+            CopyCntL += 1
+            CopyCntR = 0
             i += 1
+        #galop
+        elif CopyCntL > 7:
+            rememberi = i
+            galopcnt = 1
+
+            while left[i] < right[j]:
+                i += 2 ** galopcnt
+                galopcnt += 1
+            for z in range(i - rememberi):
+                arr[z] = left[z]
+
+        elif CopyCntR > 7:
+            rememberj = j
+            galopcnt = 1
+
+            while right[j] < left [i]:
+                j += 2**galopcnt
+                galopcnt+=1
+            for z in range(j-rememberj):
+                arr[z] = right[z]
 
         else:
             arr[k] = right[j]
+            CopyCntR += 1
+            CopyCntL = 0
             j += 1
 
         k += 1
@@ -261,20 +294,51 @@ def merge(arr, l, m, r):
         arr[k] = right[j]
         k += 1
         j += 1
+def timSort(arr):
 
-
-# Iterative Timsort function to sort the
-# array[0...n-1] (similar to merge sort)
-def timSort(arr,n):
+    n = len(arr)
     minRun = calcMinRun(n)
+    cntL = 0 #less
+    cntM = 0 #more
+    cnt = 0
+    runs = []
+#clever insertion
+    for i in range(0, n-1):
+        if arr[i+1] < arr[i]:
+            cntL += 1
 
-    # Sort individual subarrays of size RUN
-    for start in range(0, n, minRun):
-        end = min(start + minRun - 1, n - 1)
-        insertionSort(arr, start, end)
+        elif arr[i+1] > arr[i]:
+            cntM +=1
 
-    # Start merging from size RUN (or 32). It will merge
-    # to form size 64, then 128, 256 and so on ....
+        elif cntL != 0:
+            end = max(i + minRun-1, cntL)
+            insertionSort(arr,i,end)
+            runs.insert(cnt,i)
+            runs.insert(cnt+1, end-i+1)
+            cnt += 2
+            cntL = 0
+
+        elif cntM != 0:
+            end = max(i + minRun-1, cntM)
+            insertionSort(arr,i, end)
+            runs.insert(cnt,i)
+            runs.insert(cnt+1, end-i+1)
+            cnt += 2
+            cntM = 0
+
+#merging
+
+    # runs_stack = []
+    #
+    # for i in range(len(runs)/2):
+    #     runs_stack[i] = runs[i]
+    #     runs_stack[i+1] = runs[i+1]
+    #     if (runs_stack[i+1] > runs_stack[i+1-2] + runs_stack[i+1-4]) and (runs_stack[i+1-2] > runs_stack[i+1-4]):
+    #         merge(runs_stack[i+1],runs_stack[i+1-2])
+    #     else:
+    #         smaller = min(runs_stack[i+1],runs_stack[i+1-4])
+    #         merge(runs_stack[i+1-2],smaller)
+
     size = minRun
     while size < n:
 
@@ -297,18 +361,159 @@ def timSort(arr,n):
         size = 2 * size
 
 
-# Driver program to test above function
+def getMinrun(arr,n):
+    r = 0
+    while n >= 64:
+        r = r | (n & 1)
+        n //= 2
+    return n + r
+
+def binaryInsertionSort(arr, n):
+    if n <= 1:
+        return arr
+
+    for i in range(1, n):
+        index = binarySearch(arr, 0, i - 1, arr[i])
+        arr = arr[:index] + [arr[i]] + arr[index:i] + arr[i + 1:]
+
+    return arr
+
+
+def binarySearch(arr, l, r, key):
+
+    if l == r:
+        if arr[l] > key:
+            return l
+        else:
+            return l + 1
+    elif l > r:
+        return l
+    else:
+        m = (l + r) // 2
+        if arr[m] > key:
+            return binarySearch(arr, l, m - 1, key)
+        elif arr[m] < key:
+            return binarySearch(arr, m + 1, r, key)
+        else:
+            return m
+
+
+def reverse(arr,n):
+    for i in range(0, n // 2):
+        arr[i], arr[n - i - 1] = arr[n - i - 1], arr[i]
+
+
+def merge(left, right,n):
+    l = 0
+    r = 0
+    res = []
+
+    while l < len(left) and r < len(right):
+            if l < len(left) and left[l] < right[r]:
+                res.append(left[l])
+                l += 1
+            else:
+                res.append(right[r])
+                r += 1
+
+    if r == len(right):
+        res += left[l:]
+    else:
+        res += right[r:]
+
+    return res
+
+def mergeSort(arr,n):
+    if n == 1:
+        return arr
+
+    left = mergeSort(arr[:n // 2],n)
+    right = mergeSort(arr[n // 2:],n)
+    return merge(left, right)
+
+def timsort(arr,n):
+    """ The man himself """
+
+    minrun = getMinrun(arr,n)
+
+    res = []
+
+    stack = []
+    runs = []
+    run = []
+
+    i = 0
+    while i <= n:
+        if len(run) < 2:
+            run.append(arr[i])
+            i += 1
+            continue
+
+        order = run[-1] - run[-2]
+
+        # if current element ruins ordering - end current run
+        if i >= n or (arr[i] >= run[-1] and order < 0) or (arr[i] < run[-1] and order >= 0):
+            if len(run) < minrun:
+                # if current run len is less than minrun -- fill current run till len == minrun
+                if i + minrun < n:
+                    run += arr[i:i + minrun]
+                else:
+                    run += arr[i:n]
+                # hence gotta sort the shie
+                run = binaryInsertionSort(run, n)
+                i += minrun
+            elif len(run) >= minrun and order < 0:
+                # if all good but the ordering was reversed -- reverse current run
+                reverse(run,n)
+
+            runs.append(run.copy())
+            run = []
+
+            if i != n:
+                i -= 1
+        else:
+            run.append(arr[i])
+
+        i += 1
+
+    while len(runs) > 0:
+        if len(runs) == 1:
+            res = runs.pop()
+        elif len(runs) == 2:
+            res = merge(runs.pop(), runs.pop(), n)
+        else:
+            x = runs.pop()
+            y = runs.pop()
+            z = runs.pop()
+
+            if not (len(x) > len(y) + len(z)) or not (len(y) > len(z)):
+                if len(x) >= len(z):
+                    z = merge(z, y,n)
+                else:
+                    x = merge(x, y,n)
+
+                runs.append(z)
+                runs.append(x)
+            else:
+                runs.append(z)
+                runs.append(y)
+                runs.append(x)
+
+    return res
+
+
+
 if __name__ == "__main__":
 
     arr = DynamicArray()
-    a = [-2, 7, 15, -14, 0, 15, 0, 7, -7, -4, -13, 5, 8, -14, 12]
-    for i in range(len(a)):
-        arr.append(a[i])
+    for i in range(100):
+        arr.append(numpy.random.random_integers(10))
     print("Given Array is")
-    print(arr.array)
-    #
-    # # Function Call
-    timSort(arr.array,arr.size)
-    #
-    print("After Sorting Array is")
-    print(arr.array)
+    print(arr)
+
+    before = time.time()
+    timSort(arr.array)
+    after = time.time()
+
+    # print("Sorting time", after-before)
+    print(arr)

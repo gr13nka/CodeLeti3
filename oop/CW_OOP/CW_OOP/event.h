@@ -11,9 +11,16 @@ public:
     Event(int NewType, std::string NewName);
     std::string GetName();
     int GetType();
+    int GetStart();
+    int GetEnd();
+    int SetStart();
+    int SetEnd(); 
+   
 private:
     std::string TypeName = "default type";
     int Type = 0;
+    int Start;
+    int End;
     std::string Name = "default name";
 };
 

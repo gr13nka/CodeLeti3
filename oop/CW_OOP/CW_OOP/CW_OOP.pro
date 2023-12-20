@@ -11,12 +11,14 @@ CONFIG += c++17
 SOURCES += \
     event.cpp \
     eventgenerator.cpp \
+    fileparser.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     event.h \
     eventgenerator.h \
+    fileparser.h \
     mainwindow.h
 
 FORMS += \

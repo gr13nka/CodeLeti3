@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui(new Ui::MainWin
     tmr->setInterval(1000); // Задаем интервал таймера
     connect(tmr, SIGNAL(timeout()), this, SLOT(updateTime())); // Подключаем сигнал таймера к нашему слоту
     tmr->start(); // Запускаем таймер
+    ui->TrackingButton->setEnabled(false);
 
 }
 
@@ -24,8 +25,27 @@ void MainWindow::updateTime()
 
 void MainWindow::on_TrackingButton_clicked()
 {
-    QTime sperma = QTime::currentTime();
-    std::cout << (QTime::currentTime().toString().toStdString()) << "\n";
 
+
+}
+
+
+void MainWindow::on_CheckFileButton_clicked()
+{
+    ui->TrackingButton->setEnabled(false);
+    fileparser.FileContent(ui->CheckFileLine->text().toStdString());
+
+    if (fileparser.Check() == 1)
+    {
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setWindowTitle("Ошибка");
+        msgBox.setText("Не удалось открыть файл!");
+        msgBox.exec();
+    }
+    if (fileparser.Check() == 0)
+    {
+        ui->TrackingButton->setEnabled(true);
+    }
 }
 

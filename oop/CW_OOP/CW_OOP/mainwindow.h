@@ -4,7 +4,10 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QTime>
+#include <QMessageBox>
+
 #include "eventgenerator.h"
+#include "fileparser.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -24,9 +27,10 @@ public:
 private:
     Ui::MainWindow *ui;
     QTimer *tmr;
-
+    FileParser fileparser;
 private slots:
     void updateTime();
     void on_TrackingButton_clicked();
+    void on_CheckFileButton_clicked();
 };
 #endif // MAINWINDOW_H
